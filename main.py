@@ -5,20 +5,27 @@ from aiogram import Bot, types
 from aiogram.dispatcher import Dispatcher
 from aiogram.utils import executor
 import time
+from bs4 import BeautifulSoup
 
-bot = Bot(token='6184649771:AAEMI_6Q5nua1XWYiil9JQS9Ullp5CU-prk')
+bot = Bot(token='5815959183:AAHCo4ZbBWoWFE9hPKkO-zYCjeaRyZFCyMM')
 dp = Dispatcher(bot)
 
-word_site = "https://www.mit.edu/~ecprice/wordlist.10000"
-response = requests.get(word_site)
-WORDS = response.content.splitlines()
+@dp.message_handler(commands=['start'])
+async def start(message):
+    await bot.send_message(message.chat.id, f"Hello {message.from_user.mention}! Press /check to check tickets for Gauhartas (16 March)")
+@dp.message_handler(commands=['check'])
+async def checkTicketon(message):
+    ticketonG16 = "https://m.ticketon.kz/show/4482233"
+    rG16 = requests.get(ticketonG16)
 
-@dp.message_handler(commands=['malik'])
-async def malik(message):
-    while True:
-        word = random.choice(WORDS)
-        await bot.send_message(message.chat.id, f"{word.decode('utf-8')} you malik")
-        time.sleep(3600)
+    soup = BeautifulSoup(rG16.text, "lxml")
+    articles_card = soup.find_all("div", class_="b-hall_error")
+
+    for article in articles_card:
+        article_desc = article.find('p').text.strip()
+    await bot.send_message(message.chat.id, f"{article_desc}"
+                                            f"\nhttps://m.ticketon.kz/show/4482233")
+
 
 if __name__ == '__main__':
     executor.start_polling(dp)
